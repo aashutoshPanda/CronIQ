@@ -3,6 +3,7 @@ dotenv.config({ path: ".env.example" });
 import express from "express";
 import routes from "./src/routes/index.js";
 import { listenToQueueAndReceive } from "./src/services/message-brokers/subscribers.js";
+import { deleteQueue } from "./src/services/message-brokers/index.js";
 
 // Make all variables from our .env file available in our process
 

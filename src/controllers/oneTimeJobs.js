@@ -1,39 +1,28 @@
-import sequelize from "../helpers/sequelize.js";
 import { pushObjectToQueue } from "../services/message-brokers/publishers.js";
 import { OneTimeJob } from "../models/index.js";
+import { JobTypes } from "../constants/index.js";
 
 /**
  * Controller function to create a new job.
  */
 export const createJob = async (req, res) => {
-  const t = await sequelize.transaction();
-
   try {
     // Extract job details from the request body
-    const { code, timeoutSeconds } = req.body;
+    const { code, timeoutMilliSeconds } = req.body;
 
-    // Create the job in the database within the transaction
-    const job = await OneTimeJob.create(
-      {
-        code,
-        timeoutSeconds,
-      },
-      { transaction: t }
-    );
+    // Create the job in the database
+    const job = await OneTimeJob.create({
+      code,
+      timeoutMilliSeconds,
+    });
 
-    // Add the job ID to the queue
-    await pushObjectToQueue({ id: job.id, type: "OneTimeJob" }); // Replace this with the actual function to add the job to the queue
-
-    // Commit the transaction after the job is successfully added to the queue
-    await t.commit();
+    // Push the job ID to the queue
+    await pushObjectToQueue({ id: job.id, type: JobTypes.OneTimeJob }); // Replace this with the actual function to add the job to the queue
 
     // Return the created job as the response
     res.status(201).json(job);
   } catch (error) {
     console.error("Error creating job:", error);
-
-    // Rollback the transaction in case of an error
-    await t.rollback();
 
     res.status(500).json({ error: "Failed to create job" });
   }

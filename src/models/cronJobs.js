@@ -2,6 +2,8 @@ import sequelize from "../helpers/sequelize.js";
 import { DataTypes } from "sequelize";
 import { User } from "./index.js";
 
+const DEFAULT_JOB_TIMEOUT_MS = 10 * 1000;
+
 const CronJob = sequelize.define("CronJob", {
   id: {
     type: DataTypes.INTEGER,
@@ -12,9 +14,10 @@ const CronJob = sequelize.define("CronJob", {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-  timeoutSeconds: {
+  timeoutMilliSeconds: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    defaultValue: DEFAULT_JOB_TIMEOUT_MS,
   },
   cron: {
     type: DataTypes.STRING,

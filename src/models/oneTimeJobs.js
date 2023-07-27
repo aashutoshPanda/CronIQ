@@ -13,7 +13,7 @@ const OneTimeJob = sequelize.define("OneTimeJob", {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-  timeoutSeconds: {
+  timeoutMilliSeconds: {
     type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: DEFAULT_JOB_TIMEOUT_MS,
