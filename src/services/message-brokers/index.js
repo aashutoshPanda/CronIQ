@@ -1,6 +1,6 @@
-import amqp from "amqplib";
+const amqp = require("amqplib")
 
-export async function connect() {
+async function connect() {
   try {
     const connection = await amqp.connect('amqp://localhost'); // Replace 'localhost' with your RabbitMQ server address if it's different.
     const channel = await connection.createChannel();
@@ -16,3 +16,5 @@ export async function connect() {
     console.error('Error connecting to RabbitMQ:', error);
   }
 }
+
+module.exports = connect;

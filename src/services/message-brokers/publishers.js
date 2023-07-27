@@ -1,6 +1,6 @@
-import {connect} from "./index.js"
+import { connect } from './index.js';
 
-export async function pushObjectToQueue(obj) {
+export const pushObjectToQueue = async (obj) => {
   const { connection, channel, queueName } = await connect();
 
   try {
@@ -14,4 +14,4 @@ export async function pushObjectToQueue(obj) {
     await channel.close();
     await connection.close();
   }
-}
+};
