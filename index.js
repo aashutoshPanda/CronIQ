@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config({ path: ".env.example" });
 import express from "express";
 import routes from "./src/routes/index.js";
+import { listenToQueueAndReceive } from "./src/services/message-brokers/subscribers.js";
 
 // Make all variables from our .env file available in our process
 
@@ -20,5 +21,7 @@ const address = process.env.SERVER_ADDRESS || "localhost";
 app.get("/", (req, res) => res.send("Hello World!"));
 
 app.listen(port, () => console.log(`Server running on http://${address}:${port}`));
+
+listenToQueueAndReceive();
 
 export default app;

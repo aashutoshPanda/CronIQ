@@ -1,6 +1,8 @@
 import sequelize from "../helpers/sequelize.js";
 import { DataTypes } from "sequelize";
+import { User } from "./index.js";
 
+const DEFAULT_JOB_TIMEOUT_MS = 10 * 1000;
 const OneTimeJob = sequelize.define("OneTimeJob", {
   id: {
     type: DataTypes.INTEGER,
@@ -14,10 +16,17 @@ const OneTimeJob = sequelize.define("OneTimeJob", {
   timeoutSeconds: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    defaultValue: DEFAULT_JOB_TIMEOUT_MS,
   },
   startTime: {
     type: DataTypes.DATE,
     allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
+  status: {
+    type: DataTypes.ENUM("running", "finished", "submitted"),
+    allowNull: false,
+    defaultValue: "submitted", // Default value for status will be "submitted"
   },
   enabled: {
     type: DataTypes.BOOLEAN,
@@ -30,7 +39,6 @@ const OneTimeJob = sequelize.define("OneTimeJob", {
 User.hasMany(OneTimeJob, {
   foreignKey: "userId",
 });
-OneTimeJob.belongsTo(User);
 
 sequelize
   .sync()

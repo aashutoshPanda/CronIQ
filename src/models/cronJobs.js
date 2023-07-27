@@ -1,5 +1,6 @@
 import sequelize from "../helpers/sequelize.js";
 import { DataTypes } from "sequelize";
+import { User } from "./index.js";
 
 const CronJob = sequelize.define("CronJob", {
   id: {
@@ -34,7 +35,6 @@ const CronJob = sequelize.define("CronJob", {
 User.hasMany(CronJob, {
   foreignKey: "userId",
 });
-CronJob.belongsTo(User);
 
 sequelize
   .sync()

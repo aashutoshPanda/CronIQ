@@ -45,8 +45,8 @@ export const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const { username, password } = req.body;
     const encryptedPassword = await bcrypt.hash(password, salt);
-    const created_user = await User.create({ username, password: encryptedPassword });
-    res.status(201).json(created_user);
+    const { id } = await User.create({ username, password: encryptedPassword });
+    res.status(201).json({ id, username });
   } catch (err) {
     console.log(err);
     return res.status(500).send({
