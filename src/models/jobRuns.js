@@ -1,6 +1,5 @@
 import sequelize from "../helpers/sequelize.js";
-import { DataTypes } from "sequelize";
-import { JobTypes } from "../constants/index.js";
+import { JobTypes } from "../constants.js"; // Importing job types constants from constants.js
 
 const JobRun = sequelize.define("JobRun", {
   id: {
@@ -13,12 +12,20 @@ const JobRun = sequelize.define("JobRun", {
     allowNull: true,
   },
   jobType: {
-    type: DataTypes.ENUM(JobTypes.OneTimeJob, JobTypes.CronJob),
+    type: DataTypes.ENUM(...Object.values(JobTypes)), // Use constants for ENUM values
     allowNull: false,
+  },
+  pid: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  status: {
+    type: DataTypes.ENUM("running", "success", "failed"), // Define valid status values
+    allowNull: true,
   },
   startTime: {
     type: DataTypes.DATE,
-    allowNull: false,
+    allowNull: true,
   },
   endTime: {
     type: DataTypes.DATE,
