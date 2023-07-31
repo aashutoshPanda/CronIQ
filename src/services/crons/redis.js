@@ -1,4 +1,7 @@
 import Redis from "ioredis";
+import { v4 as uuidv4 } from "uuid";
+import { JobTypes } from "../../constants/index.js";
+import { pushObjectToQueue } from "../message-brokers/publishers.js";
 
 class RedisManager {
   constructor() {
@@ -18,40 +21,35 @@ class RedisManager {
 
     // Subscribe to the expiration event channel
     this.redisSubscriber.subscribe("__keyevent@0__:expired");
-    this.redisSubscriber.on("message", (channel, message) => {
+    this.redisSubscriber.on("message", async (channel, message) => {
       if (channel === "__keyevent@0__:expired") {
-        this.handleExpiredJobRun(message);
+        await this.handleExpiredJobRun(message);
       }
     });
   }
 
-  addJobRun(jobRun) {
-    const { id, startTime } = jobRun;
+  async addJobRun(jobId, startTime) {
     const currentTime = new Date();
 
     if (startTime <= currentTime) {
-      console.log(`Job run with ID "${id}" has already elapsed.`);
+      console.log(`Job run with ID "${jobId}" has already elapsed.`);
       return;
     }
 
+    // Create the new string with the 'id' and UUID suffix
+    const uuid = uuidv4();
+    const redisJobId = `${jobId}-${uuid}`;
     const expirationTimeSeconds = Math.floor((startTime - currentTime) / 1000);
-    this.redisPublisher.setex(id, expirationTimeSeconds, JSON.stringify(jobRun));
+    await this.redisPublisher.setex(redisJobId, expirationTimeSeconds, JSON.stringify(jobRun));
   }
 
-  handleExpiredJobRun(id) {
-    console.log(`Job run with ID "${id}" has expired.`);
+  async handleExpiredJobRun(redisJobId) {
+    console.log(`Job run with ID "${redisJobId}" has expired.`);
+    const jobId = redisJobId.split("-")[0];
     // Your logic to handle the expired job run goes here
+    await pushObjectToQueue({ id: jobId, type: JobTypes.CronJob });
   }
 }
 
 // Usage example:
-const redisManager = new RedisManager();
-
-// Suppose you have a jobRun object with an ID and startTime, you can add it like this:
-const currentDate = new Date();
-const futureDate = new Date(currentDate.getTime() + 5000);
-const jobRun = {
-  id: "jobRun1",
-  startTime: futureDate,
-};
-redisManager.addJobRun(jobRun);
+export const redisManager = new RedisManager();
