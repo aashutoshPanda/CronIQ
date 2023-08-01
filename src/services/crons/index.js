@@ -1,6 +1,6 @@
-import { TIME_FOR_ADVANCE_CRON_RUNS_MS } from "../../constants";
+import { TIME_FOR_ADVANCE_CRON_RUNS_MS } from "../../constants/index.js";
 import cronParser from "cron-parser";
-import { redisManager } from "./redis";
+import { redisManager } from "./redis.js";
 
 export function findCronJobTimestamps(cronString, startTime, endTime) {
   try {
@@ -20,7 +20,9 @@ export function findCronJobTimestamps(cronString, startTime, endTime) {
         break;
       }
 
-      timestamps.push(nextTimestamp.value.toISOString()); // Use nextTimestamp.value directly
+      const dateString = nextTimestamp.value.toISOString();
+      const millisecondsSinceEpoch = Date.parse(dateString);
+      timestamps.push(millisecondsSinceEpoch); // Use nextTimestamp.value directly
     }
 
     return timestamps;
@@ -37,23 +39,22 @@ function findEarlierDate(date1, date2) {
     return date2;
   }
 }
-function addMillisecondsToDate(date, millisecondsToAdd) {
-  const timestamp = date.getTime() + millisecondsToAdd;
+function addMillisecondsToDate(dateMsSinceEpoch, millisecondsToAdd) {
+  const timestamp = dateMsSinceEpoch + millisecondsToAdd;
   return new Date(timestamp);
 }
 
 export const scheduleJobsIfApplicable = async (job) => {
-  const startTime = Date.now();
+  const startTime = Date.now(); // this returns milliseconds since epoch
   const endTimeOfCurrentRedisJobBatch = addMillisecondsToDate(startTime, TIME_FOR_ADVANCE_CRON_RUNS_MS);
   const endTime = findEarlierDate(job.endTime, endTimeOfCurrentRedisJobBatch);
-  const timestampsForJob = findCronJobTimestamps(job.cron, startTime, endTime);
+  const timestampsMSSinceEpochsForJob = findCronJobTimestamps(job.cron, startTime, endTime);
 
-  if (timestampsForJob.length === 0) {
+  if (timestampsMSSinceEpochsForJob.length === 0) {
     return;
   }
-
   try {
-    const promises = timestampsForJob.map((timestamp) => redisManager.addJobRun(job.id, timestamp));
+    const promises = timestampsMSSinceEpochsForJob.map((timestampMS) => redisManager.addJobRun(job.id, timestampMS));
     await Promise.all(promises);
     console.log("All jobs have been added to redis.");
   } catch (error) {

@@ -1,4 +1,4 @@
-import { CronJob } from "../models";
+import { CronJob } from "../models/index.js";
 import { scheduleJobsIfApplicable } from "../services/crons/index.js";
 
 export const createJob = async (req, res) => {

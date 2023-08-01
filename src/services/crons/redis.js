@@ -28,19 +28,26 @@ class RedisManager {
     });
   }
 
-  async addJobRun(jobId, startTime) {
-    const currentTime = new Date();
+  async addJobRun(jobId, startTimeMS) {
+    const currentTime = Date.now(); // this is MS since epoch
 
-    if (startTime <= currentTime) {
+    if (startTimeMS <= currentTime) {
       console.log(`Job run with ID "${jobId}" has already elapsed.`);
       return;
     }
 
+    // console.log({ jobId, startTime });
     // Create the new string with the 'id' and UUID suffix
     const uuid = uuidv4();
     const redisJobId = `${jobId}-${uuid}`;
-    const expirationTimeSeconds = Math.floor((startTime - currentTime) / 1000);
-    await this.redisPublisher.setex(redisJobId, expirationTimeSeconds, JSON.stringify(jobRun));
+    console.log({ currentTime, startTimeMS });
+    const expirationTimeSeconds = Math.floor((startTimeMS - currentTime) / 1000);
+    console.log({ expirationTimeSeconds });
+    await this.redisPublisher.setex(
+      redisJobId,
+      expirationTimeSeconds,
+      JSON.stringify({ type: JobTypes.CronJob, id: jobId })
+    );
   }
 
   async handleExpiredJobRun(redisJobId) {
