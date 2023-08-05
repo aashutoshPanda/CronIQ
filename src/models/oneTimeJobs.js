@@ -28,10 +28,10 @@ const OneTimeJob = sequelize.define("OneTimeJob", {
     allowNull: false,
     defaultValue: "submitted", // Default value for status will be "submitted"
   },
-  enabled: {
+  isDeleted: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: true,
+    defaultValue: false,
   },
 });
 

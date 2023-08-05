@@ -1,12 +1,8 @@
 import express from "express";
-import {
-  createJob,
-  deleteJob,
-  filterJobsByStatus,
-  getAllJobs,
-  getJobById,
-  updateJob,
-} from "../controllers/oneTimeJobs.js";
+import { createJob, deleteJob, filterJobsByStatus, getAllJobs, getJobById } from "../controllers/oneTimeJobs.js";
+import { validateOneTimeJobCreate, isOneTimeJobIdValid, isUserCreatorOneTimeJob } from "../middlewares/validators.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { isAuthenticated } from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -15,7 +11,13 @@ const router = express.Router();
  * @desc    Get details of a specific job by its ID
  * @access  Private
  */
-router.get("/:id", getJobById);
+router.get(
+  "/:id",
+  asyncHandler(isAuthenticated),
+  asyncHandler(isOneTimeJobIdValid),
+  asyncHandler(isUserCreatorOneTimeJob),
+  getJobById
+);
 
 /**
  * @route   POST /api/jobs/list
@@ -29,21 +31,20 @@ router.post("/list", getAllJobs);
  * @desc    Create a new job
  * @access  Private
  */
-router.post("/create", createJob);
-
-/**
- * @route   PUT /api/jobs/:id
- * @desc    Update a specific job by its ID
- * @access  Private
- */
-router.put("/:id", updateJob);
+router.post("/", asyncHandler(isAuthenticated), validateOneTimeJobCreate, createJob);
 
 /**
  * @route   DELETE /api/jobs/:id
  * @desc    Delete a specific job by its ID
  * @access  Private
  */
-router.delete("/:id", deleteJob);
+router.delete(
+  "/:id",
+  asyncHandler(isAuthenticated),
+  asyncHandler(isOneTimeJobIdValid),
+  asyncHandler(isUserCreatorOneTimeJob),
+  deleteJob
+);
 
 /**
  * @route   POST /api/jobs/filter/:status

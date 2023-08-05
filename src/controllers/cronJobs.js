@@ -12,6 +12,7 @@ export const createJob = async (req, res) => {
       timeoutMilliSeconds,
       cron,
       endTime,
+      userId: req.user.id,
     });
     await scheduleJobsIfApplicable(job);
     // Return the created job as the response
@@ -22,24 +23,30 @@ export const createJob = async (req, res) => {
   }
 };
 
-export const updateJob = async (req, res) => {
+export const patchJob = async (req, res) => {
   try {
     // Extract job details from the request body
-    const { jobId, code, timeoutMilliSeconds, cron, endTime, enabled } = req.body;
+
+    const { id } = req.params;
+    const { code, timeoutMilliSeconds, cron, endTime } = req.body;
 
     // Find the CronJob by ID
-    const job = await CronJob.findByPk(jobId);
+    const job = await CronJob.findByPk(id);
 
-    if (!job) {
-      return res.status(404).json({ error: "Job not found" });
+    // Define an object with the request body properties and their corresponding job properties
+    const updateFields = {
+      code,
+      timeoutMilliSeconds,
+      cron,
+      endTime,
+    };
+
+    // Update the job with new details, but only if they are present in the request body
+    for (const [key, value] of Object.entries(updateFields)) {
+      if (value !== undefined) {
+        job[key] = value;
+      }
     }
-
-    // Update the job with new details
-    job.code = code;
-    job.timeoutMilliSeconds = timeoutMilliSeconds;
-    job.cron = cron;
-    job.endTime = endTime;
-    job.enabled = enabled;
 
     // Save the updated job to the database
     await job.save();
@@ -48,30 +55,46 @@ export const updateJob = async (req, res) => {
     res.json(job);
   } catch (error) {
     console.error("Error updating job:", error);
-
     res.status(500).json({ error: "Failed to update job" });
   }
 };
 
-export const removeJob = async (req, res) => {
+export const deleteJob = async (req, res) => {
   try {
-    const { jobId } = req.params;
+    const { id } = req.params;
 
     // Find the CronJob by ID
+    const job = await CronJob.findByPk(id);
+
+    // Set isDeleted to true and save the job
+    job.isDeleted = true;
+    await job.save();
+
+    // Return a success message as the response
+    res.json({ message: "Job deleted successfully" });
+  } catch (error) {
+    console.error("Error removing job:", error);
+    res.status(500).json({ error: "Failed to remove job" });
+  }
+};
+
+/**
+ * Controller function to get a job by its ID.
+ */
+export const getJobById = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    // Find the job by its ID
     const job = await CronJob.findByPk(jobId);
 
     if (!job) {
       return res.status(404).json({ error: "Job not found" });
     }
 
-    // Delete the job from the database
-    await job.destroy();
-
-    // Return a success message as the response
-    res.json({ message: "Job deleted successfully" });
+    res.status(200).json(job);
   } catch (error) {
-    console.error("Error removing job:", error);
-
-    res.status(500).json({ error: "Failed to remove job" });
+    console.error("Error getting job by ID:", error);
+    res.status(500).json({ error: "Failed to get job" });
   }
 };

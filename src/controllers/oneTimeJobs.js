@@ -1,6 +1,6 @@
 import { pushObjectToQueue } from "../services/message-brokers/publishers.js";
-import { OneTimeJob } from "../models/index.js";
-import { JobTypes } from "../constants/index.js";
+import { OneTimeJob, JobRun } from "../models/index.js";
+import { JobTypes, JobRunStatuses } from "../constants/index.js";
 
 /**
  * Controller function to create a new job.
@@ -14,6 +14,7 @@ export const createJob = async (req, res) => {
     const job = await OneTimeJob.create({
       code,
       timeoutMilliSeconds,
+      userId: req.user.id,
     });
 
     // Push the job ID to the queue
@@ -29,60 +30,23 @@ export const createJob = async (req, res) => {
 };
 
 /**
- * Controller function to update a job by its ID.
- */
-export const updateJob = async (req, res) => {
-  try {
-    // Extract job details to update from the request body
-    const { code, timeoutSeconds, startTime, enabled, status } = req.body;
-
-    // Get the job by its ID
-    const jobId = req.params.id;
-    const job = await OneTimeJob.findByPk(jobId);
-
-    if (!job) {
-      return res.status(404).json({ error: "Job not found" });
-    }
-
-    // Update the job properties
-    job.code = code;
-    job.timeoutSeconds = timeoutSeconds;
-    job.startTime = startTime;
-    job.enabled = enabled;
-    job.status = status;
-
-    // Save the updated job to the database
-    await job.save();
-
-    // Return the updated job as the response
-    res.status(200).json(job);
-  } catch (error) {
-    console.error("Error updating job:", error);
-    res.status(500).json({ error: "Failed to update job" });
-  }
-};
-
-/**
  * Controller function to delete a job by its ID.
  */
 export const deleteJob = async (req, res) => {
   try {
-    const jobId = req.params.id;
+    const { id } = req.params;
 
-    // Find the job by its ID
-    const job = await OneTimeJob.findByPk(jobId);
+    // Find the CronJob by ID
+    const job = await OneTimeJob.findByPk(id);
+    // Set isDeleted to true and save the job
+    job.isDeleted = true;
+    await job.save();
 
-    if (!job) {
-      return res.status(404).json({ error: "Job not found" });
-    }
-
-    // Delete the job
-    await job.destroy();
-
-    res.status(200).json({ message: "Job deleted successfully" });
+    // Return a success message as the response
+    res.json({ message: "Job deleted successfully" });
   } catch (error) {
-    console.error("Error deleting job:", error);
-    res.status(500).json({ error: "Failed to delete job" });
+    console.error("Error removing job:", error);
+    res.status(500).json({ error: "Failed to remove job" });
   }
 };
 

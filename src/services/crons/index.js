@@ -10,6 +10,8 @@ export function findCronJobTimestamps(cronString, startTime, endTime) {
       iterator: true, // Use iterator to get the next timestamps
     };
 
+    console.log("findCronJobTimestamps", { cronString, startTime, endTime });
+
     const interval = cronParser.parseExpression(cronString, options);
     const timestamps = [];
 
