@@ -1,6 +1,6 @@
 import { pushObjectToQueue } from "../services/message-brokers/publishers.js";
 import { OneTimeJob, JobRun } from "../models/index.js";
-import { JobTypes, JobRunStatuses } from "../constants/index.js";
+import { JobTypes } from "../constants/index.js";
 
 /**
  * Controller function to create a new job.
@@ -86,23 +86,36 @@ export const getAllJobs = async (req, res) => {
   }
 };
 
-/**
- * Controller function to filter jobs by their status.
- */
-export const filterJobsByStatus = async (req, res) => {
+// Controller to get all OneTimeJobs with isDeleted=false for the current user
+export async function getAllOneTimeJobs(req, res) {
   try {
-    const { status } = req.params;
+    // Assuming you have user information stored in req.user
+    const userId = req.user.id;
 
-    // Find all jobs with the specified status
-    const jobs = await OneTimeJob.findAll({
-      where: {
-        status,
-      },
-    });
+    // Fetch all OneTimeJobs associated with the current user where isDeleted is false
+    const oneTimeJobs = await OneTimeJob.findAll({ where: { userId, isDeleted: false } });
 
-    res.status(200).json(jobs);
+    res.json(oneTimeJobs);
   } catch (error) {
-    console.error("Error filtering jobs by status:", error);
-    res.status(500).json({ error: "Failed to filter jobs" });
+    console.error("Error fetching OneTimeJobs:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
-};
+}
+
+// Controller to get all JobRuns for a given CronJob
+export async function getJobRuns(req, res) {
+  try {
+    const { id } = req.params; // Assuming you pass the jobId in the request URL parameters
+
+    // You may also pass the jobType as a query parameter or from the request body, depending on your requirements
+    const jobType = JobTypes.OneTimeJob; // Replace 'CronJob' with the actual value based on your constants
+
+    // Fetch all JobRuns associated with the given jobId and jobType
+    const jobRuns = await JobRun.findAll({ where: { jobId: id, jobType } });
+
+    res.json(jobRuns);
+  } catch (error) {
+    console.error("Error fetching JobRuns:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}

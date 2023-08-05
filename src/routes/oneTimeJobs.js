@@ -1,5 +1,5 @@
 import express from "express";
-import { createJob, deleteJob, filterJobsByStatus, getAllJobs, getJobById } from "../controllers/oneTimeJobs.js";
+import { createJob, deleteJob, getJobRuns, getAllJobs, getJobById } from "../controllers/oneTimeJobs.js";
 import { validateOneTimeJobCreate, isOneTimeJobIdValid, isUserCreatorOneTimeJob } from "../middlewares/validators.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { isAuthenticated } from "../middlewares/auth.js";
@@ -7,7 +7,7 @@ import { isAuthenticated } from "../middlewares/auth.js";
 const router = express.Router();
 
 /**
- * @route   GET /api/jobs/:id
+ * @route   GET api/one-time-job/:id
  * @desc    Get details of a specific job by its ID
  * @access  Private
  */
@@ -20,21 +20,41 @@ router.get(
 );
 
 /**
- * @route   POST /api/jobs/list
+ * @route   GET /api/cron-job/runs/:id
+ * @desc    Get all the job runs of this job
+ * @access  Private
+ */
+router.get(
+  "/runs/:id",
+  asyncHandler(isAuthenticated),
+  asyncHandler(isOneTimeJobIdValid),
+  asyncHandler(isUserCreatorOneTimeJob),
+  getJobRuns
+);
+
+/**
+ * @route   GET api/one-time-job/
+ * @desc    GET all one-time-jobs
+ * @access  Private
+ */
+router.get("/", asyncHandler(isAuthenticated), getAllJobs);
+
+/**
+ * @route   POST api/one-time-job/list
  * @desc    Get a list of all jobs
  * @access  Private
  */
 router.post("/list", getAllJobs);
 
 /**
- * @route   POST /api/jobs/create
+ * @route   POST api/one-time-job/create
  * @desc    Create a new job
  * @access  Private
  */
 router.post("/", asyncHandler(isAuthenticated), validateOneTimeJobCreate, createJob);
 
 /**
- * @route   DELETE /api/jobs/:id
+ * @route   DELETE api/one-time-job/:id
  * @desc    Delete a specific job by its ID
  * @access  Private
  */
@@ -45,12 +65,5 @@ router.delete(
   asyncHandler(isUserCreatorOneTimeJob),
   deleteJob
 );
-
-/**
- * @route   POST /api/jobs/filter/:status
- * @desc    Get jobs filtered by their status
- * @access  Private
- */
-router.post("/filter/:status", filterJobsByStatus);
 
 export default router;

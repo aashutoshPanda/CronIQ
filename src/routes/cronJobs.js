@@ -1,5 +1,5 @@
 import express from "express";
-import { createJob, deleteJob, getJobById, patchJob } from "../controllers/cronJobs.js";
+import { createJob, deleteJob, getJobById, getJobRuns, patchJob, getAllCronJobs } from "../controllers/cronJobs.js";
 import { isAuthenticated } from "../middlewares/auth.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {
@@ -12,7 +12,7 @@ import {
 const router = express.Router();
 
 /**
- * @route   GET /api/jobs/:id
+ * @route   GET /api/cron-job/:id
  * @desc    Get details of a specific job by its ID
  * @access  Private
  */
@@ -24,22 +24,34 @@ router.get(
   getJobById
 );
 
-// /**
-//  * @route   POST /api/jobs/list
-//  * @desc    Get a list of all jobs
-//  * @access  Private
-//  */
-// router.post("/list", getAllJobs);
+/**
+ * @route   GET /api/cron-job/runs/:id
+ * @desc    Get all the job runs of this job
+ * @access  Private
+ */
+router.get(
+  "/runs/:id",
+  asyncHandler(isAuthenticated),
+  asyncHandler(isCronJobIdValid),
+  asyncHandler(isUserCreatorCronJob),
+  getJobRuns
+);
+/**
+ * @route   GET /api/cron-jobs
+ * @desc    Get a list of all jobs
+ * @access  Private
+ */
+router.get("/", asyncHandler(isAuthenticated), getAllCronJobs);
 
 /**
- * @route   POST /api/jobs/create
+ * @route   POST /api/cron-job/create
  * @desc    Create a new job
  * @access  Private
  */
 router.post("/", asyncHandler(isAuthenticated), validateCronJobCreate, createJob);
 
 /**
- * @route   PATCH /api/jobs/:id
+ * @route   PATCH /api/cron-job/:id
  * @desc    Update a specific job by its ID
  * @access  Private
  */
@@ -53,7 +65,7 @@ router.patch(
 );
 
 /**
- * @route   DELETE /api/jobs/:id
+ * @route   DELETE /api/cron-job/:id
  * @desc    Delete a specific job by its ID
  * @access  Private
  */
@@ -66,7 +78,7 @@ router.delete(
 );
 
 // /**
-//  * @route   POST /api/jobs/filter/:status
+//  * @route   POST /api/cron-job/filter/:status
 //  * @desc    Get jobs filtered by their status
 //  * @access  Private
 //  */

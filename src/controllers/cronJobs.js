@@ -1,5 +1,6 @@
-import { CronJob } from "../models/index.js";
+import { CronJob, JobRun } from "../models/index.js";
 import { scheduleJobsIfApplicable, handleCronUpdateForJob } from "../services/crons/index.js";
+import { JobTypes } from "../constants/index.js";
 
 export const createJob = async (req, res) => {
   try {
@@ -102,3 +103,37 @@ export const getJobById = async (req, res) => {
     res.status(500).json({ error: "Failed to get job" });
   }
 };
+
+// Controller to get all CronJobs with isDeleted=false for the current user
+export async function getAllCronJobs(req, res) {
+  try {
+    // Assuming you have user information stored in req.user
+    const userId = req.user.id;
+
+    // Fetch all CronJobs associated with the current user where isDeleted is false
+    const cronJobs = await CronJob.findAll({ where: { userId, isDeleted: false } });
+
+    res.json(cronJobs);
+  } catch (error) {
+    console.error("Error fetching CronJobs:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+// Controller to get all JobRuns for a given CronJob
+export async function getJobRuns(req, res) {
+  try {
+    const { id } = req.params; // Assuming you pass the jobId in the request URL parameters
+
+    // You may also pass the jobType as a query parameter or from the request body, depending on your requirements
+    const jobType = JobTypes.CronJob; // Replace 'CronJob' with the actual value based on your constants
+
+    // Fetch all JobRuns associated with the given jobId and jobType
+    const jobRuns = await JobRun.findAll({ where: { jobId: id, jobType } });
+
+    res.json(jobRuns);
+  } catch (error) {
+    console.error("Error fetching JobRuns:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
