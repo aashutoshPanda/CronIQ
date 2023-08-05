@@ -71,6 +71,16 @@ class RedisManager {
     // Your logic to handle the expired job run goes here
     await pushObjectToQueue({ id: jobId, type: JobTypes.CronJob });
   }
+
+  async clearAll() {
+    try {
+      // Use the FLUSHALL command to clear all keys from Redis
+      await this.redisPublisher.flushall();
+      console.log("All keys cleared from Redis successfully!");
+    } catch (error) {
+      console.error("Error clearing Redis:", error);
+    }
+  }
 }
 
 // Usage example:

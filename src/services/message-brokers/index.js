@@ -21,16 +21,11 @@ export async function connect() {
 // Function to delete the queue in RabbitMQ
 export const deleteQueue = async () => {
   try {
-    const { connection, channel, queueName } = await connect();
+    const { channel, queueName } = await connect();
 
     // Delete the queue
     await channel.deleteQueue(queueName);
-
     console.log("Queue deleted successfully.");
-
-    // Close the channel and connection
-    await channel.close();
-    await connection.close();
   } catch (error) {
     console.error("Error deleting queue:", error.message);
   }
