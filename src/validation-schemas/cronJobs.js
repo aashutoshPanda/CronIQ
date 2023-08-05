@@ -41,7 +41,7 @@ export const cronJobSchemaUpdate = yup.object().shape({
   timeoutMilliSeconds: yup.number().positive().integer(),
   cron: yup.string().test("valid-cron", "Invalid cron string", (value) => {
     try {
-      if (value && cronParser.parseExpression(value)) {
+      if (value && !cronParser.parseExpression(value)) {
         return false;
       }
       return true;

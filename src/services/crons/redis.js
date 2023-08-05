@@ -50,6 +50,21 @@ class RedisManager {
     );
   }
 
+  async removeJob(job) {
+    const redisJobIdPrefix = `${job.id}`;
+    // Get all keys from Redis matching the given jobIdPrefix
+    const keys = await this.redisPublisher.keys(`${redisJobIdPrefix}*`);
+
+    if (keys.length === 0) {
+      console.log(`No jobs found with jobId prefix "${redisJobIdPrefix}".`);
+      return;
+    }
+
+    // Delete all keys found with the given prefix
+    const deletedKeysCount = await this.redisPublisher.del(keys);
+    console.log(`Deleted ${deletedKeysCount} jobs with jobId prefix "${redisJobIdPrefix}".`);
+  }
+
   async handleExpiredJobRun(redisJobId) {
     console.log(`Job run with ID "${redisJobId}" has expired.`);
     const jobId = redisJobId.split("-")[0];

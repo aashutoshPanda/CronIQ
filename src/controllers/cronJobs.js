@@ -1,5 +1,5 @@
 import { CronJob } from "../models/index.js";
-import { scheduleJobsIfApplicable } from "../services/crons/index.js";
+import { scheduleJobsIfApplicable, handleCronUpdateForJob } from "../services/crons/index.js";
 
 export const createJob = async (req, res) => {
   try {
@@ -50,6 +50,10 @@ export const patchJob = async (req, res) => {
 
     // Save the updated job to the database
     await job.save();
+
+    if (cron) {
+      await handleCronUpdateForJob(job);
+    }
 
     // Return the updated job as the response
     res.json(job);

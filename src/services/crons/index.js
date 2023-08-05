@@ -63,3 +63,8 @@ export const scheduleJobsIfApplicable = async (job) => {
     console.error("Error while adding jobs at redis", error);
   }
 };
+
+export const handleCronUpdateForJob = async (job) => {
+  await redisManager.removeJob(job);
+  await scheduleJobsIfApplicable(job);
+};
