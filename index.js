@@ -3,7 +3,8 @@ dotenv.config({ path: ".env.example" });
 import express from "express";
 import routes from "./src/routes/index.js";
 import { listenToQueueAndReceive } from "./src/services/message-brokers/subscribers.js";
-import { deleteQueue } from "./src/services/message-brokers/index.js";
+import { startJobScheduler } from "./src/services/crons/index.js";
+import { resetDataStores } from "./src/utils/resetDataStores.js";
 
 // Make all variables from our .env file available in our process
 
@@ -23,6 +24,12 @@ app.get("/", (req, res) => res.send("Hello World!"));
 
 app.listen(port, () => console.log(`Server running on http://${address}:${port}`));
 
+await resetDataStores();
+// Activating workers
+// this takes jobs from RabbitMQ queue and runs them
 listenToQueueAndReceive();
+
+// this puts jobs in redis with TTL from time to time
+startJobScheduler();
 
 export default app;
