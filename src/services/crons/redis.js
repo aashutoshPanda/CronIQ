@@ -36,10 +36,7 @@ class RedisManager {
       return;
     }
 
-    // console.log({ jobId, startTime });
-    // Create the new string with the 'id' and UUID suffix
-    const uuid = uuidv4();
-    const redisJobId = `${jobId}-${uuid}`;
+    const redisJobId = `${jobId}-${startTimeMS}`;
     console.log({ currentTime, startTimeMS });
     const expirationTimeSeconds = Math.floor((startTimeMS - currentTime) / 1000);
     console.log({ expirationTimeSeconds });

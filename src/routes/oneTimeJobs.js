@@ -40,15 +40,8 @@ router.get(
 router.get("/", asyncHandler(isAuthenticated), getAllJobs);
 
 /**
- * @route   POST api/one-time-job/list
- * @desc    Get a list of all jobs
- * @access  Private
- */
-router.post("/list", getAllJobs);
-
-/**
- * @route   POST api/one-time-job/create
- * @desc    Create a new job
+ * @route   POST api/one-time-job/
+ * @desc    Create a new one-time job
  * @access  Private
  */
 router.post("/", asyncHandler(isAuthenticated), validateOneTimeJobCreate, createJob);

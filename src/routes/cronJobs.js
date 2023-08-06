@@ -38,7 +38,7 @@ router.get(
 );
 /**
  * @route   GET /api/cron-jobs
- * @desc    Get a list of all jobs
+ * @desc    Get a list of all cron jobs
  * @access  Private
  */
 router.get("/", asyncHandler(isAuthenticated), getAllCronJobs);
@@ -52,7 +52,7 @@ router.post("/", asyncHandler(isAuthenticated), validateCronJobCreate, createJob
 
 /**
  * @route   PATCH /api/cron-job/:id
- * @desc    Update a specific job by its ID
+ * @desc    Patch a specific job by its ID
  * @access  Private
  */
 router.patch(
@@ -76,12 +76,5 @@ router.delete(
   asyncHandler(isUserCreatorCronJob),
   deleteJob
 );
-
-// /**
-//  * @route   POST /api/cron-job/filter/:status
-//  * @desc    Get jobs filtered by their status
-//  * @access  Private
-//  */
-// router.post("/filter/:status", filterJobsByStatus);
 
 export default router;
