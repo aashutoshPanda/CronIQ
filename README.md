@@ -1,6 +1,7 @@
 # CronIQ API
 
 CronIQ is a powerful and reliable Node.js API designed to build a job scheduling system that excels in executing, managing, and monitoring various tasks.
+POSTMAN DOCS - [here](https://documenter.getpostman.com/view/7984450/2s9XxySZBe)
 
 ## How to Use?
 
